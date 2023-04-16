@@ -15,14 +15,21 @@ if (!existsSync(dataPath)) {
   fs.writeFile(dataPath, "[]", "utf-8");
 }
 
-export const saveContacts = (nama, email, noHp) => {
-  const contact = { nama, email, noHp };
-
+// load Contacts
+const loadContact = () => {
   //read data folder first
   const file = readFileSync(dataPath, "utf-8");
 
   //change from string to json so it can be pushed
   const contacts = JSON.parse(file);
+  return contacts;
+};
+
+export const saveContacts = (nama, email, noHp) => {
+  const contact = { nama, email, noHp };
+
+  // load contacts
+  const contacts = loadContact();
 
   // duplicate name check
   const duplikat = contacts.find((contact) => contact.nama === nama);
@@ -53,4 +60,53 @@ export const saveContacts = (nama, email, noHp) => {
   //write file into contacts.json
   fs.writeFile(dataPath, JSON.stringify(contacts));
   console.log(chalk.green.inverse.bold(`Data berhasil di masukkan`));
+};
+
+export const listContact = () => {
+  const contacts = loadContact();
+  console.log(chalk.blueBright.inverse.bold(`Daftar kontak`));
+  contacts.forEach((contact, i) => {
+    console.log(`${i + 1}. ${contact.nama} - ${contact.noHp}`);
+  });
+};
+
+export const detailContact = (nama) => {
+  const contacts = loadContact();
+  const contact = contacts.find(
+    (contact) => contact.nama.toLowerCase() === nama.toLowerCase(),
+  );
+  //if contact not match
+  if (!contact) {
+    console.log(chalk.red.inverse.bold(`${nama} tidak ditemukan`));
+    return false;
+  }
+
+  // contact match
+  console.log(
+    chalk.blueBright.inverse.bold(
+      `contact dengan nama ${contact.nama} ditemukan`,
+    ),
+  );
+  console.log(`${contact.nama}`);
+  console.log(`${contact.noHp}`);
+  if (contact.email) {
+    console.log(`${contact.email}`);
+  }
+};
+
+export const deleteContact = (nama) => {
+  const contacts = loadContact();
+  const newContacts = contacts.filter(
+    (contact) => contact.nama.toLowerCase() !== nama.toLowerCase(),
+  );
+
+  if (contacts.length === newContacts.length) {
+    console.log(chalk.red.inverse.bold(`${nama} tidak ditemukan`));
+    return false;
+  }
+
+  fs.writeFile(dataPath, JSON.stringify(newContacts));
+  console.log(
+    chalk.green.inverse.bold(`data contact ${nama} berhasil dihapus`),
+  );
 };
